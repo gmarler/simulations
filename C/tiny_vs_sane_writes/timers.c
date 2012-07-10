@@ -107,20 +107,20 @@ void *sig_handler (void *arg)
 
     if (sig_number == SIGINT) {
       printf("Got SIGINT\n");
-      status = pthread_mutex_lock( &mutex );
+      status = pthread_mutex_lock( &intr_mutex );
       if (status != 0) {
-        perror("Failed to lock mutex");
+        perror("Failed to lock intr_mutex");
         exit(1);
       }
       interrupted = 1;
-      status = pthread_cond_signal( &cond );
+      status = pthread_cond_signal( &intr_cond );
       if (status != 0) {
-        perror("Failed to signal condition");
+        perror("Failed to signal intr_cond");
         exit(1);
       }
-      status = pthread_mutex_unlock( &mutex );
+      status = pthread_mutex_unlock( &intr_mutex );
       if (status != 0) {
-        perror("Failed to unlock mutex");
+        perror("Failed to unlock intr_mutex");
         exit(1);
       }
     }
@@ -128,6 +128,29 @@ void *sig_handler (void *arg)
       signal_count++;
       if ( signal_count % 50 == 0) {
         printf("Received another 50 timer signals\n");
+      }
+      /* lock the write_mutex */
+      status = pthread_mutex_lock( &write_mutex );
+      if (status != 0) {
+        perror("Failed to lock write mutex");
+        exit(1);
+      }
+
+      /* Update the current writes_pending under mutex protection*/
+      writes_pending++;
+
+      /* signal the write_cond condition variable */
+      status = pthread_cond_signal(&write_cond);
+      if (status != 0) {
+        perror("Failed to signal write_cond");
+        exit(1);
+      }
+
+      /* unlock the write_mutex */
+      status = pthread_mutex_unlock( &write_mutex );
+      if (status != 0) {
+        perror("Failed to unlock write mutex");
+        exit(1);
       }
     }
   }

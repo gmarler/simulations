@@ -9,9 +9,11 @@ LIBS   := -lpthread -lrt
 test1: test1.c          
 	$(CC) $(CFLAGS) -g -o $@ $^ $(LIBS)
                         
-timer_test: timer_test.c timers.o
+timer_test: timer_test.c timers.o writer.o
 	$(CC) $(CFLAGS) -g -o $@ $^ $(LIBS)
                         
 timers.o:  timers.c timers.h
 	$(CC) $(CFLAGS) -g -c $@ $<
 
+writer.o:  writer.c writer.h
+	$(CC) $(CFLAGS) -g -c $@ $<

@@ -7,8 +7,11 @@
 #include <stdio.h>
 
 extern int             interrupted;
-extern pthread_mutex_t mutex;
-extern pthread_cond_t  cond;
+extern int             writes_pending;
+extern pthread_mutex_t intr_mutex;
+extern pthread_cond_t  intr_cond;
+extern pthread_mutex_t write_mutex;
+extern pthread_cond_t  write_cond;
 
 void report_resolution(void);
 void timer_func(unsigned int iops);
