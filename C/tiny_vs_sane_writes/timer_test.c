@@ -7,7 +7,8 @@ pthread_cond_t  intr_cond  = PTHREAD_COND_INITIALIZER;
 
 int   interrupted    = 0;
 int   writes_pending = 0;
-char *filename;
+char *filename       = NULL;
+unsigned int iops    = 0;
 
 int main(int argc, char **argv) {
   pthread_t         timer_thread_id,
@@ -17,7 +18,6 @@ int main(int argc, char **argv) {
   sigset_t          set;
   struct sigaction  act;
 
-  unsigned int      iops = 0;
 
   /* Start by masking the "interesting" signals,
    * SIGINT:   To abort
@@ -50,6 +50,11 @@ int main(int argc, char **argv) {
   /* default IOPS to 1 */
   if (iops == 0)
     iops = 1;
+  /* fail if filename not set */
+  if (! filename) {
+    perror("Must provide filename to log to");
+    exit(1);
+  }
 
   report_resolution();
 

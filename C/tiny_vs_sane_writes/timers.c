@@ -125,10 +125,7 @@ void *sig_handler (void *arg)
       }
     }
     else if (sig_number == SIGRTMIN) {
-      signal_count++;
-      if ( signal_count % 50 == 0) {
-        printf("Received another 50 timer signals\n");
-      }
+
       /* lock the write_mutex */
       status = pthread_mutex_lock( &write_mutex );
       if (status != 0) {

@@ -4,10 +4,18 @@
 
 void *tiny_writer(void * arg)
 {
-  int        status, i;
+  int        status, i, fd;
   static int writes_performed = 0;
   my_data_t  jdata;
 
+  /* Open the log file, truncating it */
+  if ((fd = open(filename,
+                 O_CREAT | O_RDWR | O_LARGEFILE | O_TRUNC,
+                 S_IRUSR | S_IWUSR )) == -1) {
+    perror("Unable to open file");
+    exit(1);
+  }
+ 
   /* Go into an effectively infinite loop, waiting on a condition variable to
    * decide when to write data very inefficiently */
 
@@ -26,11 +34,15 @@ void *tiny_writer(void * arg)
       }
 
       for ( i = 0; i < writes_pending; i++ ) {
+        write(fd, &jdata.header, 21); 
+        write(fd, &jdata.payload, 60); 
+        write(fd, &jdata.trailer, 1);
+
         writes_performed++;
         writes_pending--;
       }
-      if ( writes_performed % 50 == 0) {
-        printf("Performed another 50 writes\n");
+      if ( writes_performed % iops == 0) {
+        printf("Performed another %d writes\n",iops);
       }
 
     }
