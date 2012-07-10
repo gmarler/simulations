@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 
 typedef struct my_data_tag {
   char payload[60];
@@ -21,3 +22,4 @@ extern unsigned int  iops;
 
 
 void *tiny_writer(void * arg);
+void *sane_writer(void * arg);
