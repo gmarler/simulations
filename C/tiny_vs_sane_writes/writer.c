@@ -39,18 +39,20 @@ void *tiny_writer(void * arg)
         write(fd, &jdata.trailer, 1);
 
         writes_performed++;
-        writes_pending--;
       }
-      if ( writes_performed % iops == 0) {
-        printf("Performed another %d writes\n",iops);
-      }
-
     }
+
+    /* Reset writes_pending */
+    writes_pending = 0;
 
     status = pthread_mutex_unlock( &write_mutex );
     if (status != 0) {
       perror("Failed to unlock write mutex");
       exit(1);
+    }
+
+    if ( writes_performed % iops == 0) {
+      printf("Performed another %d writes\n",iops);
     }
   }
 
