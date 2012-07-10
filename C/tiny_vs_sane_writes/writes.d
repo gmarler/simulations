@@ -7,7 +7,7 @@
 syscall::write:entry
 / execname == "timer_test" /
 {
-  @[probefunc] = count();
+  @[probefunc,arg2] = count();
 }
 
 tick-1sec

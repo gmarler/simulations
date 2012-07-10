@@ -17,6 +17,7 @@ int main(int argc, char **argv) {
   int               status, c;
   sigset_t          set;
   struct sigaction  act;
+  char             *mode = NULL;
 
 
   /* Start by masking the "interesting" signals,
@@ -33,7 +34,7 @@ int main(int argc, char **argv) {
   status = pthread_sigmask( SIG_BLOCK, &set, NULL );
 
   /*  parse arguments */
-  while ( (c = getopt(argc, argv, "f:(logfile)i:(iops)")) != EOF ) {
+  while ( (c = getopt(argc, argv, "f:(logfile)i:(iops)m:(mode)")) != EOF ) {
     switch (c) {
       case 'f':   /* log'f'ile name */
         filename = strdup(optarg);
@@ -42,6 +43,10 @@ int main(int argc, char **argv) {
       case 'i':   /* 'i'ops to generate */
         iops = atoi(optarg);
         printf("Generating %s IOPS\n",optarg);
+        break;
+      case 'm':   /* 'm'ode to run in, tiny or sane */
+        mode = strdup(optarg);
+        printf("Attempting to run in %s mode\n",optarg);
         break;
       default:
         break;
@@ -55,6 +60,10 @@ int main(int argc, char **argv) {
     perror("Must provide filename to log to");
     exit(1);
   }
+  if (! mode) {
+    /* default to tiny mode */
+    mode = "tiny";
+  }
 
   report_resolution();
 
@@ -65,7 +74,8 @@ int main(int argc, char **argv) {
     exit(1);
   }
   /* Create the writer thread */
-  status = pthread_create( &writer_id, NULL, tiny_writer, NULL);
+  /* TODO: use a function pointer here */
+  status = pthread_create( &writer_id, NULL, sane_writer, NULL);
   if (status != 0) {
     perror("Startup of writer thread");
     exit(1);

@@ -67,14 +67,14 @@ void *sane_writer(void *arg)
   char       *buf1, *buf2, *cur_buf;
   size_t      buf_offset = 0;
 
-  /* Allocate 2 x 2 MB buffers, since we might overflow 1 MB a little */
-  buf1 = malloc(2 * 1024 * 1024);
+  /* Allocate 2 x 35 MB buffers, since we might overflow 1 MB a little */
+  buf1 = malloc(35 * 1024 * 1024);
   if ( ! buf1 ) {
     perror("Error allocating write buffer #1");
     exit( 1 );
   }
     
-  buf2 = malloc(2 * 1024 * 1024);
+  buf2 = malloc(35 * 1024 * 1024);
   if ( ! buf2 ) {
     perror("Error allocating write buffer #2");
     exit( 1 );
@@ -91,9 +91,6 @@ void *sane_writer(void *arg)
     exit(1);
   }
  
-  /* Go into an effectively infinite loop, waiting on a condition variable to
-   * decide when to write data very inefficiently */
-
   while (1) {
     status = pthread_mutex_lock( &write_mutex );
     if (status != 0) {
@@ -108,7 +105,7 @@ void *sane_writer(void *arg)
         exit(1);
       }
 
-      for ( i = 0; i < writes_pending; i++ ) {
+      while ( writes_pending-- ) {
         memcpy(&jdata.header,  cur_buf + buf_offset,          21);
         memcpy(&jdata.payload, cur_buf + buf_offset + 21,     60);
         memcpy(&jdata.trailer, cur_buf + buf_offset + 21 + 1,  1);
@@ -116,25 +113,19 @@ void *sane_writer(void *arg)
       }
 
       /* TODO: Make this a constant or somesuch */
-      if ( buf_offset >= (1024 * 1024) ) {
+      if ( buf_offset >= (30 * 1024 * 1024) ) {
         writes_performed++;
         write(fd, cur_buf, buf_offset);
+        printf("Flipping write buffers\n");
         cur_buf == buf1 ? buf2 : buf1;
         buf_offset  = 0;
       }
     }
 
-    /* Reset writes_pending */
-    writes_pending = 0;
-
     status = pthread_mutex_unlock( &write_mutex );
     if (status != 0) {
       perror("Failed to unlock write mutex");
       exit(1);
-    }
-
-    if ( writes_performed % iops == 0) {
-      printf("Performed another %d writes\n",iops);
     }
   }
 
