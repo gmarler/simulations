@@ -133,7 +133,7 @@ void *sig_handler (void *arg)
         exit(1);
       }
 
-      /* Update the current writes_pending under mutex protection*/
+      /* Update the current writes_pending under mutex protection */
       writes_pending++;
 
       /* signal the write_cond condition variable */
