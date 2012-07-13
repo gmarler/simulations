@@ -84,9 +84,9 @@ int main(int argc, char **argv) {
   report_resolution();
 
   /* Create the sigwait/sigwaitinfo thread */
-  status = pthread_create( &sig_handler_id, NULL, sig_handler, NULL);
+  status = pthread_create( &sig_handler_id, NULL, sig_processor, NULL);
   if (status != 0) {
-    perror("Startup of sig handler thread");
+    perror("Startup of signal processor thread");
     exit(1);
   }
   /* Create the writer thread */
