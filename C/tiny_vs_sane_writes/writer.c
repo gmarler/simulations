@@ -26,14 +26,14 @@ void *tiny_writer(void * arg)
       exit(1);
     }
 
-    while (writes_pending > 0) {
+    while (writes_pending >= 0) {
       status = pthread_cond_wait( &write_cond, &write_mutex );
       if (status != 0) {
         perror("Failed on tiny_writer wait on write_cond");
         exit(1);
       }
 
-      for ( i = 0; i < writes_pending; i++ ) {
+      while ( writes_pending-- ) {
         write(fd, &jdata.header, 21); 
         write(fd, &jdata.payload, 60); 
         write(fd, &jdata.trailer, 1);
@@ -41,8 +41,9 @@ void *tiny_writer(void * arg)
         writes_performed += 3;
       }
 
-      /* Reset writes_pending while holding mutex */
-      writes_pending = 0;
+      if ( (writes_performed % (iops * 3)) == 0) {
+        printf("Performed %d writes (%d * 3)\n",(iops * 3),iops);
+      }
     }
 
     status = pthread_mutex_unlock( &write_mutex );
@@ -50,12 +51,7 @@ void *tiny_writer(void * arg)
       perror("Failed to unlock write mutex");
       exit(1);
     }
-
-    if ( (writes_performed % (iops * 3)) == 0) {
-      printf("Performed %d writes (%d * 3)\n",(iops * 3),iops);
-    }
   }
-
 }
 
 /* a writer that buffers at least 1 MB before writing them out to the filesystem */
@@ -67,14 +63,14 @@ void *sane_writer(void *arg)
   char       *buf1, *buf2, *cur_buf;
   size_t      buf_offset = 0;
 
-  /* Allocate 2 x 35 MB buffers, since we might overflow 1 MB a little */
-  buf1 = malloc(35 * 1024 * 1024);
+  /* Allocate 2 x 5 MB buffers, since we might overflow 1 MB a little */
+  buf1 = malloc(5 * 1024 * 1024);
   if ( ! buf1 ) {
     perror("Error allocating write buffer #1");
     exit( 1 );
   }
     
-  buf2 = malloc(35 * 1024 * 1024);
+  buf2 = malloc(5 * 1024 * 1024);
   if ( ! buf2 ) {
     perror("Error allocating write buffer #2");
     exit( 1 );
@@ -98,7 +94,7 @@ void *sane_writer(void *arg)
       exit(1);
     }
 
-    while (writes_pending > 0) {
+    while (writes_pending >= 0) {
       status = pthread_cond_wait( &write_cond, &write_mutex );
       if (status != 0) {
         perror("Failed on tiny_writer wait on write_cond");
@@ -113,7 +109,7 @@ void *sane_writer(void *arg)
       }
 
       /* TODO: Make this a constant or somesuch */
-      if ( buf_offset >= (30 * 1024 * 1024) ) {
+      if ( buf_offset >= (4 * 1024 * 1024) ) {
         writes_performed++;
         write(fd, cur_buf, buf_offset);
         printf("Flipping write buffers\n");

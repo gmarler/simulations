@@ -8,7 +8,7 @@
 
 
 fbt:ufs::entry,
-fbt::zfs:entry
+fbt:zfs::entry
 {
   self->fsfunc[probefunc,stackdepth] = vtimestamp;
 }

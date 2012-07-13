@@ -12,8 +12,10 @@ extern pthread_mutex_t intr_mutex;
 extern pthread_cond_t  intr_cond;
 extern pthread_mutex_t write_mutex;
 extern pthread_cond_t  write_cond;
+extern unsigned int    iops;
 
 void report_resolution(void);
 void timer_func(unsigned int iops);
 static void timer_handler(int signum, siginfo_t *info, void *context);
 void *sig_handler(void *arg);
+void *sig_counter(void *arg);

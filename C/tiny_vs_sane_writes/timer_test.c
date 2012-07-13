@@ -18,6 +18,8 @@ int main(int argc, char **argv) {
   sigset_t          set;
   struct sigaction  act;
   char             *mode = NULL;
+  void             *(*writer_func)(void *arg);
+  void             *(*sig_processor)(void *arg);
 
 
   /* Start by masking the "interesting" signals,
@@ -34,7 +36,7 @@ int main(int argc, char **argv) {
   status = pthread_sigmask( SIG_BLOCK, &set, NULL );
 
   /*  parse arguments */
-  while ( (c = getopt(argc, argv, "f:(logfile)i:(iops)m:(mode)")) != EOF ) {
+  while ( (c = getopt(argc, argv, "f:(logfile)i:(iops)m:(mode)d(debug)")) != EOF ) {
     switch (c) {
       case 'f':   /* log'f'ile name */
         filename = strdup(optarg);
@@ -48,13 +50,17 @@ int main(int argc, char **argv) {
         mode = strdup(optarg);
         printf("Attempting to run in %s mode\n",optarg);
         break;
+      case 'd':   /* For debugging of signal generation/sigwait */
+        sig_processor = &sig_counter; 
+        printf("DEBUG on\n");             
+        break;                            
       default:
         break;
     }
   }
-  /* default IOPS to 1 */
+  /* default IOPS to 50 */
   if (iops == 0)
-    iops = 1;
+    iops = 50;
   /* fail if filename not set */
   if (! filename) {
     perror("Must provide filename to log to");
@@ -63,6 +69,16 @@ int main(int argc, char **argv) {
   if (! mode) {
     /* default to tiny mode */
     mode = "tiny";
+    writer_func = &tiny_writer;
+  } else {
+    if ( strcmp(mode, "tiny") == 0 ) {  
+      writer_func = &tiny_writer;            
+    } else if ( strcmp(mode, "sane") == 0 ) {
+      writer_func = &sane_writer;            
+    } else {                                
+      printf("ERROR: unknown mode %s\n",mode);
+      exit(1);                              
+    }
   }
 
   report_resolution();
@@ -74,8 +90,7 @@ int main(int argc, char **argv) {
     exit(1);
   }
   /* Create the writer thread */
-  /* TODO: use a function pointer here */
-  status = pthread_create( &writer_id, NULL, sane_writer, NULL);
+  status = pthread_create( &writer_id, NULL, writer_func, NULL);
   if (status != 0) {
     perror("Startup of writer thread");
     exit(1);
