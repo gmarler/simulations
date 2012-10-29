@@ -3,14 +3,13 @@
 
 int main(void)
 {
-  char *mydir = "/tmp/GM";
+  char *mydir = "./TDIR";
   int i;
   size_t fsize;
 
-  create_tempfile(mydir,8192);
-
-  for (i = 0; i < 25; i++) {
+  for (i = 0; i < 75000; i++) {
     fsize = rand_tempfile_size();
-    printf("File Size: %ld\n",fsize);
+    create_tempfile(mydir,fsize);
   }
+
 }
