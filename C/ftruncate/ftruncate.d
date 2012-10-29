@@ -11,8 +11,11 @@
 BEGIN { event = 0; }
 
 syscall::fcntl:entry
+/*
 / arg1 == F_FREESP && 
   strstr(fds[arg0].fi_pathname,"/bb/bigmem") != NULL /
+  */
+/ arg1 == F_FREESP /
 {
   @c[execname] = count();
   @t["TOTAL"]  = count();
