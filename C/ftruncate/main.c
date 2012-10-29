@@ -12,6 +12,7 @@ int main(void)
   struct dirent *ent;
   struct stat stat_buf;
   char path[1024];
+  int fd, ret;
 
   for (i = 0; i < 25; i++) {
     fsize = rand_tempfile_size();
@@ -30,7 +31,15 @@ int main(void)
         }
         switch (stat_buf.st_mode & S_IFMT) {
           case S_IFREG:
-            printf("Found file %s\n",path);
+            /* Test: ftruncate to 256 KB, regardless */
+            if ((fd = open(path,O_RDWR)) == -1) {
+              printf("Unable to open file for truncation\n");
+              continue;
+            }
+            if ((ret = ftruncate(fd,(off_t)(256 * 1024))) == -1) {
+              printf("Failed to ftruncate %s\n",path);
+            }
+            sleep(1);
             break;
 
           default:
