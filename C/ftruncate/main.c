@@ -32,7 +32,7 @@ int main(void)
           case S_IFREG:
             break;
 
-          case default:
+          default:
             next;
         }
       }
