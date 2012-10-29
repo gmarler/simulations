@@ -9,6 +9,8 @@ int main(void)
   size_t fsize;
   DIR *dir;
   struct dirent *ent;
+  struct stat stat_buf;
+  char path[1024];
 
   for (i = 0; i < 750; i++) {
     fsize = rand_tempfile_size();
@@ -17,9 +19,22 @@ int main(void)
 
   dir = opendir(mydir);
   if (dir != NULL) {
-    while((ent = readdir(dir)) != NULL) {
-      filename = ent->d_name;
+    /* skip '.' and '..' */
+    if ((readdir(dir) != NULL) && (readdir(dir) != NULL)) {
+      while((ent = readdir(dir)) != NULL) {
+        snprintf(path, 1024, "%s", ent->d_name);
+        if (lstat(path, &stat_buf) == -1) {
+          perror("lstat failed");
+          continue;
+        }
+        switch (stat_buf.st_mode & S_IFMT) {
+          case S_IFREG:
+            break;
+
+          case default:
+            next;
+        }
+      }
     }
   }
-
 }
