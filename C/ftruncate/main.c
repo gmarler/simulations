@@ -1,6 +1,7 @@
 
 #include "tempfile.h"
 #include <dirent.h>
+#include <stat.h>
 
 int main(void)
 {
