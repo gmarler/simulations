@@ -40,7 +40,7 @@ create_tempfile(char *dirpath, size_t size)
   strcat(fname_buf,"/");
   strcat(fname_buf,"tempXXXXXX");
   /* strncpy(fname_buf,strcat(dirpath,strcat("/","tempXXXXXX")),512); */
-  printf("Going to create %s\n",fname_buf);
+  /*  printf("Going to create %s\n",fname_buf); */
 
   if ((temp_fd = mkstemp(fname_buf)) == -1) {
     perror("mkstemp");

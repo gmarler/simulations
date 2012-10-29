@@ -1,7 +1,7 @@
 
 #include "tempfile.h"
 #include <dirent.h>
-#include <stat.h>
+#include <sys/stat.h>
 
 int main(void)
 {
@@ -13,7 +13,7 @@ int main(void)
   struct stat stat_buf;
   char path[1024];
 
-  for (i = 0; i < 750; i++) {
+  for (i = 0; i < 25; i++) {
     fsize = rand_tempfile_size();
     create_tempfile(mydir,fsize);
   }
@@ -34,7 +34,7 @@ int main(void)
             break;
 
           default:
-            next;
+            continue;
         }
       }
     }
