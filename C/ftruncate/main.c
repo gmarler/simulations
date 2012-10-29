@@ -23,13 +23,14 @@ int main(void)
     /* skip '.' and '..' */
     if ((readdir(dir) != NULL) && (readdir(dir) != NULL)) {
       while((ent = readdir(dir)) != NULL) {
-        snprintf(path, 1024, "%s", ent->d_name);
+        snprintf(path, 1024, "%s/%s", mydir, ent->d_name);
         if (lstat(path, &stat_buf) == -1) {
           perror("lstat failed");
           continue;
         }
         switch (stat_buf.st_mode & S_IFMT) {
           case S_IFREG:
+            printf("Found file %s\n",path);
             break;
 
           default:
