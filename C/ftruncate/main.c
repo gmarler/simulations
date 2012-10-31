@@ -3,6 +3,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <getopt.h>
+#include <time.h>
 
 int main(int argc, char **argv)
 {
@@ -15,6 +16,10 @@ int main(int argc, char **argv)
   char path[1024];
   int fd, ret, filecount;
   int c;
+  struct timespec ns;
+
+  ns.tv_sec = 0;
+  ns.tv_nsec = 250000000;
 
   /* Flag set by `--verbose'. */
   static int verbose_flag;
@@ -105,7 +110,8 @@ int main(int argc, char **argv)
               printf("Failed to ftruncate %s\n",path);
             }
             close(fd);
-            sleep(1);
+            /* 4 per sec (Hz) */
+            nanosleep(&ns,(struct timespec *)NULL);
             break;
 
           default:
