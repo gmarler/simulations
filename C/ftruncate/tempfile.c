@@ -21,7 +21,7 @@
 int
 create_tempfile(char *dirpath, size_t size)
 {
-  char    data_buf[4096];
+  char    data_buf[65536];
   char    fname_buf[512];
   ssize_t nread,
           bytes_to_copy,
@@ -30,8 +30,8 @@ create_tempfile(char *dirpath, size_t size)
           temp_fd;
   int     i, saved_errno;
 
-  if ((rand_fd = open("/dev/urandom",O_RDONLY)) == -1 ) {
-    perror("Unable to open /dev/urandom");
+  if ((rand_fd = open("/dev/zero",O_RDONLY)) == -1 ) {
+    perror("Unable to open /dev/zero");
     return -1;
   }
 
