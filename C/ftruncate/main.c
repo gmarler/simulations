@@ -4,10 +4,12 @@
 #include <sys/stat.h>
 #include <getopt.h>
 #include <time.h>
+#include <unistd.h>
 
 int main(int argc, char **argv)
 {
   char *mydir;
+  char *temp_fname[5000];
   int i;
   size_t fsize;
   DIR *dir;
@@ -23,6 +25,10 @@ int main(int argc, char **argv)
 
   /* Flag set by `--verbose'. */
   static int verbose_flag;
+
+  for (i = 0; i < 5000; i++) {
+    temp_fname[i] = NULL;
+  }
 
   while (1) {
     static struct option long_options[] = {
@@ -86,7 +92,7 @@ int main(int argc, char **argv)
 
   for (i = 0; i < filecount; i++) {
     fsize = rand_tempfile_size();
-    create_tempfile(mydir,fsize);
+    temp_fname[i] = create_tempfile(mydir,fsize);
   }
 
   dir = opendir(mydir);
@@ -119,5 +125,12 @@ int main(int argc, char **argv)
         }
       }
     }
+  }
+
+  for (i = 0; i < 5000; i++) {
+    if (temp_fname[i] == NULL) break;
+    printf("Unlinking %s\n",temp_fname[i]);
+    unlink(temp_fname[i]);
+    free(temp_fname[i]);  /* was allocated when temp file created, so free here */
   }
 }

@@ -18,11 +18,12 @@
 
 #include "tempfile.h"
 
-int
+char *
 create_tempfile(char *dirpath, size_t size)
 {
   char    data_buf[65536];
   char    fname_buf[512];
+  char   *fname_ret; /* Temp filename we return */
   ssize_t nread,
           bytes_to_copy,
           to_read;
@@ -32,7 +33,7 @@ create_tempfile(char *dirpath, size_t size)
 
   if ((rand_fd = open("/dev/zero",O_RDONLY)) == -1 ) {
     perror("Unable to open /dev/zero");
-    return -1;
+    return NULL;
   }
 
   /* prime the string before strcat'ing to it */
@@ -44,7 +45,7 @@ create_tempfile(char *dirpath, size_t size)
 
   if ((temp_fd = mkstemp(fname_buf)) == -1) {
     perror("mkstemp");
-    return -1;
+    return NULL;
   }
 
   bytes_to_copy = size;
@@ -78,7 +79,9 @@ create_tempfile(char *dirpath, size_t size)
     close(rand_fd);
 
     /* success! */
-    return 0;
+    fname_ret = malloc(strlen(fname_buf));
+    strncpy(fname_ret,fname_buf,strlen(fname_buf));
+    return fname_ret;
   }
 
 out_error:
@@ -89,7 +92,7 @@ out_error:
 
   errno = saved_errno;
   perror("create_tempfile");
-  return -1;
+  return NULL;
 }
 
 size_t

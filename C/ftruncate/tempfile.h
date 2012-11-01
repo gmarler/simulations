@@ -11,7 +11,7 @@
 #include <strings.h>
 #include <time.h>
 
-int create_tempfile(char *dirpath, size_t size);
+char *create_tempfile(char *dirpath, size_t size);
 size_t rand_tempfile_size(void);
 
 #endif
