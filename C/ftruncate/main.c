@@ -26,6 +26,7 @@ int main(int argc, char **argv)
   /* Flag set by `--verbose'. */
   static int verbose_flag;
 
+  /*  Initialize temporary file list so we know when it ends */
   for (i = 0; i < 5000; i++) {
     temp_fname[i] = NULL;
   }
