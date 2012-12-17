@@ -35,7 +35,7 @@ main(int argc, char **argv)
   }
 
   /* Initialize the semaphores in shared memory */
-  sem_init(&ptr->mutex, 1, 1,);
+  sem_init(&ptr->mutex, 1, 1);
   sem_init(&ptr->nempty, 1, NMESG);
   sem_init(&ptr->nstored, 1, 0);
   sem_init(&ptr->noverflowmutex, 1, 1);
@@ -47,7 +47,7 @@ main(int argc, char **argv)
     sem_wait(&ptr->nstored);
     sem_wait(&ptr->mutex);
     offset = ptr->msgoff[index];
-    printf("index = %ld: %S\n", index, &ptr->msgdata[offset]);
+    printf("index = %ld: %s\n", index, &ptr->msgdata[offset]);
     if (++index >= NMESG)
       index = 0;                                /* circular buffer */
     sem_post(&ptr->mutex);
