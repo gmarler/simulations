@@ -10,6 +10,23 @@
 #include <errno.h>
 #include <stdlib.h>
 
+#define FNCH_PAGESZ                                         8192
+#define FNCH_MEMSIZ                                         63 * 1024 * 1024
+
+enum
+{
+    PAGESIZ = FNCH_PAGESZ,              /*must be power of 2 */
+    MEMSIZ = FNCH_MEMSIZ,
+    MINSIZ = 15 * 1024 * 1024,
+    DEFAULT_EMER_INCR = 256 * 1024      /* default allowed sbrk emergency increase */
+};
+
+/* 32-bit test */
+static char mypages[PAGESIZ + MEMSIZ + PAGESIZ];
+#define BASE &mypages[0]
+#define BBPRIBASE "p"
+
+
 int main(int argc, char **argv)
 {
   char *mydir;
@@ -25,6 +42,8 @@ int main(int argc, char **argv)
   int c;
   struct timespec ns;
   ssize_t bufsize = 63 * 1024 * 1024;
+
+  central_buffer = (char *) (((uintptr_t ) BASE + PAGESIZ - 1) & -PAGESIZ);
 
   ns.tv_sec = 0;
   ns.tv_nsec = 250000000;
@@ -112,10 +131,12 @@ int main(int argc, char **argv)
     exit(1);
   }
 
+  /*
   if ((central_buffer = memalign((size_t)8192, bufsize)) == NULL) {
     perror("Unable to allocate central buffer");
     exit(1);
   }
+  */
 
   dir = opendir(mydir);
   if (dir != NULL) {
@@ -130,22 +151,21 @@ int main(int argc, char **argv)
         switch (stat_buf.st_mode & S_IFMT) {
           case S_IFREG:
             /* Test: mmap /dev/zero */
-            if ((bufptr = mmap(central_buffer, bufsize, PROT_READ | PROT_WRITE,
-                               MAP_SHARED | MAP_FIXED, dev_zero_fd,
+            if ((bufptr = mmap(central_buffer, MEMSIZ, PROT_NONE,
+                               MAP_SHARED | MAP_FIXED | MAP_NORESERVE, dev_zero_fd,
                                0)) == MAP_FAILED) {
               perror("Unable to mmap /dev/zero");
               continue;
             }
             /* Test: mmap file */
-            /*
             if ((fd = open(path,O_RDWR)) == -1) {
               perror("Unable to open file for mmap\n");
               continue;
             }
 
-            close(fd); */
+            close(fd);
             /* 4 per sec (Hz) */
-            /*  nanosleep(&ns,(struct timespec *)NULL); */
+            nanosleep(&ns,(struct timespec *)NULL);
             break;
 
           default:
