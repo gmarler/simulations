@@ -163,6 +163,12 @@ int main(int argc, char **argv)
               continue;
             }
 
+            if ((bufptr = mmap(central_buffer, MEMSIZ, PROT_NONE,
+                               MAP_SHARED | MAP_FIXED | MAP_NORESERVE, fd,
+                               0)) == MAP_FAILED) {
+              perror("Unable to mmap file");
+              continue;
+            }
             close(fd);
             /* 4 per sec (Hz) */
             /* nanosleep(&ns,(struct timespec *)NULL); */
