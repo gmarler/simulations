@@ -79,8 +79,10 @@ create_tempfile(char *dirpath, size_t size)
     close(rand_fd);
 
     /* success! */
-    fname_ret = malloc(strlen(fname_buf));
+    /* strlen + nul byte */
+    fname_ret = malloc(strlen(fname_buf) + 1);
     strncpy(fname_ret,fname_buf,strlen(fname_buf));
+    fname_ret[strlen(fname_buf)+1] = '\0';
     return fname_ret;
   }
 
