@@ -165,7 +165,7 @@ int main(int argc, char **argv)
 
             close(fd);
             /* 4 per sec (Hz) */
-            nanosleep(&ns,(struct timespec *)NULL);
+            /* nanosleep(&ns,(struct timespec *)NULL); */
             break;
 
           default:
