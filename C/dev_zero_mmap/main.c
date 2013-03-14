@@ -42,6 +42,10 @@ int main(int argc, char **argv)
   int c;
   struct timespec ns;
   ssize_t bufsize = 63 * 1024 * 1024;
+  ssize_t clear_mmap_size,
+          data_mmap_size;
+  off_t   file_size = 0,
+          prev_file_size = 0;
 
   central_buffer = (char *) (((uintptr_t ) BASE + PAGESIZ - 1) & -PAGESIZ);
 
@@ -50,6 +54,9 @@ int main(int argc, char **argv)
 
   /* Flag set by `--verbose'. */
   static int verbose_flag;
+  /* Flag set by `--min_size'. */
+  /* Whether to mmap full buffer size, or min size (size of file) */
+  static int min_size;
 
   /*  Initialize temporary file list so we know when it ends */
   for (i = 0; i < 5000; i++) {
@@ -61,6 +68,7 @@ int main(int argc, char **argv)
       /* These options set a flag. */
       {"verbose",   no_argument, &verbose_flag, 1},
       {"brief",     no_argument, &verbose_flag, 0},
+      {"min_size",  no_argument, &min_size,     1},
       /* The following options don't set a flag. */
       {"bufsize",   required_argument, NULL, 'b'},
       {"count",     required_argument, NULL, 'c'},
@@ -147,23 +155,39 @@ int main(int argc, char **argv)
         if (lstat(path, &stat_buf) == -1) {
           perror("lstat failed");
           continue;
+        } else {
+          prev_file_size = file_size;
+          file_size = stat_buf.st_size;
         }
         switch (stat_buf.st_mode & S_IFMT) {
           case S_IFREG:
             /* Test: mmap /dev/zero */
-            if ((bufptr = mmap(central_buffer, MEMSIZ, PROT_NONE,
+            if (min_size) {
+              if (prev_file_size)
+                clear_mmap_size = prev_file_size;
+              else
+                clear_mmap_size = file_size;
+            } else {
+              clear_mmap_size = MEMSIZ;
+            }
+            if ((bufptr = mmap(central_buffer, clear_mmap_size, PROT_NONE,
                                MAP_SHARED | MAP_FIXED | MAP_NORESERVE, dev_zero_fd,
                                0)) == MAP_FAILED) {
               perror("Unable to mmap /dev/zero");
               continue;
             }
             /* Test: mmap file */
+            if (min_size)
+              data_mmap_size = file_size;
+            else
+              data_mmap_size = MEMSIZ;
+
             if ((fd = open(path,O_RDWR)) == -1) {
               perror("Unable to open file for mmap\n");
               continue;
             }
 
-            if ((bufptr = mmap(central_buffer, MEMSIZ, PROT_READ | PROT_WRITE,
+            if ((bufptr = mmap(central_buffer, data_mmap_size, PROT_READ | PROT_WRITE,
                                MAP_SHARED | MAP_FIXED | MAP_NORESERVE, fd,
                                0)) == MAP_FAILED) {
               perror("Unable to mmap file");
