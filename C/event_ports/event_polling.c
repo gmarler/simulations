@@ -130,7 +130,7 @@ port_poll(){
       return (NULL);
     }
     if ((ifd = open(name, O_RDWR)) < 0) {
-      char *err = strcat("mkfifo(3C) for ", name);
+      char *err = strcat("open(2) for ", name);
       err = strcat(name, "\n");
       perror(err);
       port_close(fds, mythid, i, 1);
