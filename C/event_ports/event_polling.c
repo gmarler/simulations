@@ -94,6 +94,7 @@ port_poll(){
   pthread_t         mythid;
   char              prefix[40];
   char              number[40];
+  char              errbuf[1024];
   char             *start = NULL;
   char             *name = NULL;
 
@@ -115,7 +116,7 @@ port_poll(){
   /* Create test files */
   mythid = pthread_self();
   printf("\nThread ID = %d\n",mythid);
-  for (i = 0;i < numfds; i++) {
+  for (i = 0; i < numfds; i++) {
     start = &number[0];
     sprintf(start,"%d",i);
     sprintf(prefix,"%s%d%s",TESTFILE,mythid,TESTFSUF);
@@ -123,16 +124,18 @@ port_poll(){
 
     error = mkfifo(name, S_IRWXU | S_IRWXG | S_IRWXO);
     if (error) {
-      char *err = strcat("mkfifo(3C) for ", name);
-      err = strcat(name, "\n");
+      char *err = strcat(errbuf, "mkfifo(3C) for ");
+      err = strcat(errbuf, name);
       perror(err);
+      errbuf[0] = '\0';
       port_close(fds, mythid, i, 0);
       return (NULL);
     }
     if ((ifd = open(name, O_RDWR)) < 0) {
-      char *err = strcat("open(2) for ", name);
-      err = strcat(name, "\n");
+      char *err = strcat(errbuf, "open(2) for ");
+      err = strcat(errbuf, name);
       perror(err);
+      errbuf[0] = '\0';
       port_close(fds, mythid, i, 1);
       return (NULL);
     }
